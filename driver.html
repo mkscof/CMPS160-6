@@ -1,0 +1,43 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Assignment 6</title>
+    <script src="webgl-utils4.js"></script>
+    <script src="webgl-debug4.js"></script>
+    <script src="cuon-utils4.js"></script>
+    <script src="cuon-matrix4.js"></script>
+    <script src="load-file4.js"></script>
+    <script src="ioSOR4.js"></script>
+    <script src="driver.js"></script>
+  </head>
+
+  <body onload="main()">
+    <canvas id="webgl" width="400" height="400">
+    Please use a browser that supports "canvas"
+    </canvas>
+
+    <button type="button" id="moveC">Move Cube</button>
+    <button type="button" id="moveL">Move Light</button>
+    <button type="button" id="changeAmbient">Cycle Ambient Color</button>
+    <button type="button" id="changeSpecular">Cycle Specular Color</button>
+    <button type="button" id="changePerspective">Change Perspective</button>
+    <!-- <button type="button" id="moveCamera">Move Camera</button> -->
+
+    <div class="shineSlider">
+        <input type="range" min="15.0" max="50.0" value="25.0" class="slider" id="glossiness">
+        <p>Specular</p>
+    </div>
+
+    <div class="planeSlider">
+        <input type="range" min="1.0" max="12.0" value="1.0" class="slider" id="nearPlane">
+        <p>Near Plane</p>
+    </div>
+
+    <p>Press "A" for Phong</p>
+    <p>Press "S" for Gouraud</p>
+
+    <input type="file" id="fileinput" />
+    <button id="update_screen" type="button">Extract SOR</button>
+    <button id="save_canvas" type="button">Save</button>
+  </body>
+</html>
