@@ -53,11 +53,11 @@ function main() {
   var sbutton = document.getElementById("changeSpecular");
   sbutton.onclick = function(ev){ changeSpecular(ev, gl, canvas); };
 
-  var pbutton = document.getElementById("changePerspective");
-  pbutton.onclick = function(ev){ changePerspective(ev, gl, canvas); };
+  // var pbutton = document.getElementById("changePerspective");
+  // pbutton.onclick = function(ev){ changePerspective(ev, gl, canvas); };
 
-  var cbutton = document.getElementById("moveCamera");
-  cbutton.onclick = function(ev){ moveCamera(ev, gl, canvas); };
+  // var cbutton = document.getElementById("moveCamera");
+  // cbutton.onclick = function(ev){ moveCamera(ev, gl, canvas); };
 
   var gSlider = document.getElementById("glossiness");
   gSlider.oninput = function(ev){ setGloss(ev, gl, canvas, gSlider); }
@@ -98,9 +98,9 @@ function start(gl, canvas) {
   // Register function event handlers
   canvas.onmousedown = function(ev){ dragFlag(canvas, ev, gl, 0); };
   canvas.onmousemove = function(ev){ dragFlag(canvas, ev, gl, 1); };
-  // canvas.onmousemove = function(ev){ clickHandler(canvas, ev, gl); };
   canvas.onmouseup = function(ev){ changeMovement(canvas, ev, gl, 1); };
   window.onkeypress = function(ev){ keypress(canvas, ev, gl); };
+  window.onkeydown = function(ev){ keydown(canvas, ev, gl); };
   document.getElementById('update_screen').onclick = function(){ updateScreen(canvas, gl); };
   document.getElementById('save_canvas').onclick = function(){ saveCanvas(); };
   // setup SOR object reading/writing
@@ -287,7 +287,32 @@ function keypress(canvas, ev, gl){
   else if (ev.which == "s".charCodeAt(0)){
       gl.uniform1i(u_shade_toggle, 0);
   }
+  else if(ev.which == "")
   drawCube(gl, canvas);
+}
+
+function keydown(canvas, ev, gl){
+  // var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
+  
+  // var x = ev.clientX, y = ev.clientY;
+  // var rect = ev.target.getBoundingClientRect();
+  // if (rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom) {
+  //   var x_in_canvas = x - rect.left
+  //   var y_in_canvas = rect.bottom - y;
+
+  //   x_in_canvas = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+  //   y_in_canvas = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+
+    if(ev.keyCode == 38){ //up
+      scaleModelMatrix.scale(1.1, 1.1, 1.1);
+    }
+    else if(ev.keyCode == 40){  //down
+      scaleModelMatrix.scale(0.9, 0.9, 0.9);
+    }
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    drawCube(gl, canvas);
+  // }
 }
 
 function clickHandler(canvas, ev, gl){
@@ -316,7 +341,9 @@ function clickHandler(canvas, ev, gl){
       changeMovement(canvas, ev, gl, 0);
     }
     else{
-      rotateCube(ev, gl, canvas);
+      if(shouldMove == 0){
+        rotateCube(ev, gl, canvas);
+      }
     }
   }
   else{
@@ -342,11 +369,6 @@ function dragFlag(canvas, ev, gl, flag){
       lastY = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
     }  
   }
-  // else{
-  //   if(shouldMove == 0){
-  //     translateCube(ev, gl, canvas);
-  //   }
-  // }
   clickHandler(canvas, ev, gl);
 }
 
@@ -367,11 +389,13 @@ function drawCube(gl, canvas, modMatrix){
   var projectionMatrix = new Matrix4();
   var viewMatrix = new Matrix4();
 
-  // var modelMatrix = transModelMatrix.multiply(rotModelMatrix);
-  // modelMatrix.multiply(scaleModelMatrix);
+  var modelMatrix = transModelMatrix;
+
+  modelMatrix.multiply(rotModelMatrix);
+  modelMatrix.multiply(scaleModelMatrix);
 
   // Pass the model matrix to u_ModelMatrix
-  gl.uniformMatrix4fv(u_ModelMatrix, false, transModelMatrix.elements);
+  gl.uniformMatrix4fv(u_ModelMatrix, false, modelMatrix.elements);
 
   // Pass the matrix to transform the normal based on the model matrix to u_NormalMatrix
   normalMatrix.setInverseOf(transModelMatrix);
@@ -406,7 +430,32 @@ function translateCube(ev, gl, canvas){
   }
 }
 function rotateCube(ev, gl, canvas){
+  var u_ModelMatrix = gl.getUniformLocation(gl.program, 'u_ModelMatrix');
 
+  var x = ev.clientX, y = ev.clientY;
+  var rect = ev.target.getBoundingClientRect();
+  if (rect.left <= x && x < rect.right && rect.top <= y && y < rect.bottom) {
+    var x_in_canvas = x - rect.left
+    var y_in_canvas = rect.bottom - y;
+
+    x_in_canvas = ((x - rect.left) - canvas.width/2)/(canvas.width/2);
+    y_in_canvas = (canvas.height/2 - (y - rect.top))/(canvas.height/2);
+
+    var angle; 
+    if(x_in_canvas > lastX){
+      angle = .05;
+    }
+    else{
+      angle = -.05;
+    }
+
+    if(clickPixels[0] > 0 || clickPixels[1] > 0 || clickPixels[2] > 0) {
+      rotModelMatrix.rotate(angle, 0, 0, 1);
+    }
+
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    drawCube(gl, canvas);
+  }
 }
 
 function changeMovement(canvas, ev, gl, move){
@@ -444,19 +493,19 @@ function checkPicked(gl, canvas, x, y, u_Picked){
   return pixels;
 }
 
-function changePerspective(ev, gl, canvas){
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  var u_Perspective = gl.getUniformLocation(gl.program, 'u_Perspective');
-  if(viewType == 0){
-    gl.uniform1i(u_Perspective, 1);
-    viewType++;
-  }
-  else{
-    gl.uniform1i(u_Perspective, 0);
-    viewType--;
-  }
-  drawCube(gl, canvas);
-}
+// function changePerspective(ev, gl, canvas){
+//   gl.clear(gl.COLOR_BUFFER_BIT);
+//   var u_Perspective = gl.getUniformLocation(gl.program, 'u_Perspective');
+//   if(viewType == 0){
+//     gl.uniform1i(u_Perspective, 1);
+//     viewType++;
+//   }
+//   else{
+//     gl.uniform1i(u_Perspective, 0);
+//     viewType--;
+//   }
+//   drawCube(gl, canvas);
+// }
 
 function moveCube(ev, gl, canvas){
   for(var i = 0; i < vertices.length; i++){
