@@ -64,6 +64,9 @@ function main() {
   var gravbutton = document.getElementById("gravity");
   gravbutton.onclick = function(ev){ applyGravity(ev, gl, canvas); };
 
+  var squarebutton = document.getElementById("squareMove");
+  squarebutton.onclick = function(ev){ moveSquare(ev, gl, canvas); };
+
   var shearButton = document.getElementById("shear");
   shearButton.onclick = function(ev){ shearTransform(ev, gl, canvas); };
 
@@ -139,9 +142,8 @@ function start(gl, canvas) {
   var u_shade_toggle = gl.getUniformLocation(gl.program, 'u_shade_toggle');
   var u_shine = gl.getUniformLocation(gl.program, 'u_shine');
   var u_Picked = gl.getUniformLocation(gl.program, 'u_Picked');
-  var u_Perspective = gl.getUniformLocation(gl.program, 'u_Perspective');
   
-  if (!u_NormalMatrix || !u_ProjectionMatrix || !u_ViewMatrix || !u_LightColor || !u_LightPosition|| !u_AmbientLight || !u_SpecularLight || !u_shade_toggle || !u_Picked || !u_Perspective) { 
+  if (!u_NormalMatrix || !u_ProjectionMatrix || !u_ViewMatrix || !u_LightColor || !u_LightPosition || !u_AmbientLight || !u_SpecularLight || !u_shade_toggle || !u_Picked) { 
     console.log('Failed to get the storage location');
     return;
   }
@@ -160,8 +162,7 @@ function start(gl, canvas) {
   gl.uniform1f(u_shine, 25.0);
   // Init selected object
   gl.uniform1i(u_Picked, 0);
-  // Initially perspective view
-  gl.uniform1i(u_Perspective, 0);
+
 
   transModelMatrix = new Matrix4();  // Model matrix
   rotModelMatrix = new Matrix4();
@@ -452,10 +453,10 @@ function rotateCube(ev, gl, canvas){
 
     var angle; 
     if(x_in_canvas > lastX){
-      angle = .05;
+      angle = -1;
     }
     else{
-      angle = -.05;
+      angle = 1;
     }
 
     if(clickPixels[0] > 0 || clickPixels[1] > 0 || clickPixels[2] > 0) {
@@ -516,9 +517,37 @@ function applyGravity(ev, gl, canvas){
   var ticktock = function(){
     transModelMatrix.translate(0, -.8, 0);
     drawCube(gl, canvas);
-    requestAnimationFrame(tick, canvas);
+    requestAnimationFrame(ticktock, canvas);
   }
   ticktock();
+}
+
+var sm = 10;
+function moveSquare(ev, gl, canvas){
+  var tocktick = function(){  
+    if(sm < 20){
+      transModelMatrix.translate(-0.1, 0, 0);
+      sm++;
+    }
+    else if(20 <= sm && sm < 40){
+      transModelMatrix.translate(0, 0.1, 0);
+      sm++;
+    }
+    else if(40 <= sm && sm < 60){
+      transModelMatrix.translate(0.1, 0, 0);
+      sm++;
+    }
+    else if(60 <= sm && sm < 80){
+      transModelMatrix.translate(0, -0.1, 0);
+      sm++;
+    }
+    if(sm > 79){
+      sm = 0;
+    }
+    drawCube(gl, canvas);
+    requestAnimationFrame(tocktick, canvas);
+  }
+  tocktick();
 }
 
 ///---Copied from starter code---///

@@ -17,13 +17,10 @@ varying vec3 v_Normal;
 varying vec3 v_Position;
 
 uniform int u_Picked;
-uniform int u_Perspective;
 uniform float u_shine;
 uniform int u_shade_toggle;
 
-void main() {
-  int setPerspective = u_Perspective;
-  
+void main() {  
   gl_Position = u_ProjectionMatrix * u_ViewMatrix * u_ModelMatrix * a_Position;
 
   v_Normal = normalize(vec3(u_NormalMatrix * a_Normal));
